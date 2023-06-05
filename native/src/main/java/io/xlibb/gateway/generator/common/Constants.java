@@ -16,27 +16,22 @@ public class Constants {
     public static final String QUERY_ARGS_PLACEHOLDER = "@\\{queryArgs}";
     public static final String URL_PLACEHOLDER = "@\\{url}";
     public static final String RESOURCE_FUNCTIONS_PLACEHOLDER = "@\\{resourceFunctions}";
-
     public static final String MATCH_CLIENT_STATEMENTS_PLACEHOLDER = "@\\{matchClientStatements}";
-    // Constants for the gateway service generation.
+    public static final String INITIAL_RESULT = "@\\{initialResult}";
+    public static final String INITIAL_RESULT_ASSIGNMENT = "@\\{initialResultAssignment}";
     public static final String CONFIGURABLE_PORT_STATEMENT = "configurable int PORT = 9000;";
     public static final String BALLERINA_GRAPHQL_IMPORT_STATEMENT = "import ballerina/graphql;";
     public static final String BALLERINA_LOG_IMPORT_STATEMENT = "import ballerina/log;";
     public static final String GRAPHQL_CLIENT_DECLARATION_STATEMENT =
             "final graphql:Client " + CLIENT_NAME_PLACEHOLDER +
                     "_CLIENT = check new graphql:Client(\"" + URL_PLACEHOLDER + "\");";
-
-    // Constants for the gateway query plan generation.
     public static final String CLIENT_NAME_DECLARATION = "public const string " + CLIENT_NAME_PLACEHOLDER
             + " = \"" + CLIENT_NAME_VALUE_PLACEHOLDER + "\";";
-
     public static final String ISOLATED_SERVICE_TEMPLATE = "isolated service on new graphql:Listener(PORT) {" +
             RESOURCE_FUNCTIONS_PLACEHOLDER +
             "}";
     public static final String MATCH_CLIENT_STATEMENT_TEMPLATE =
             "\"" + CLIENT_NAME_VALUE_PLACEHOLDER + "\" => {return " + CLIENT_NAME_PLACEHOLDER + "_CLIENT;}";
-
-    // File names for templates
     public static final String RESOURCE_FUNCTION_TEMPLATE_FILE = "resource_function.bal.partial";
     public static final String REMOTE_FUNCTION_TEMPLATE_FILE = "remote_function.bal.partial";
     public static final String GET_CLIENT_FUNCTION_TEMPLATE_FILE = "get_client_function.bal.partial";

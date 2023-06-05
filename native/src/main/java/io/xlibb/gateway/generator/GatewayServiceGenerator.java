@@ -24,6 +24,7 @@ import graphql.schema.GraphQLAppliedDirective;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLSchemaElement;
+import graphql.schema.GraphQLType;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
@@ -63,6 +64,8 @@ import static io.xlibb.gateway.generator.common.Constants.CONFIGURABLE_PORT_STAT
 import static io.xlibb.gateway.generator.common.Constants.FUNCTION_PARAM_PLACEHOLDER;
 import static io.xlibb.gateway.generator.common.Constants.GET_CLIENT_FUNCTION_TEMPLATE_FILE;
 import static io.xlibb.gateway.generator.common.Constants.GRAPHQL_CLIENT_DECLARATION_STATEMENT;
+import static io.xlibb.gateway.generator.common.Constants.INITIAL_RESULT;
+import static io.xlibb.gateway.generator.common.Constants.INITIAL_RESULT_ASSIGNMENT;
 import static io.xlibb.gateway.generator.common.Constants.MATCH_CLIENT_STATEMENTS_PLACEHOLDER;
 import static io.xlibb.gateway.generator.common.Constants.MATCH_CLIENT_STATEMENT_TEMPLATE;
 import static io.xlibb.gateway.generator.common.Constants.QUERY_ARGS_PLACEHOLDER;
@@ -159,6 +162,22 @@ public class GatewayServiceGenerator {
         } else {
             throw new GatewayGenerationException("Unsupported function type");
         }
+
+        GraphQLType returnType = ((GraphQLFieldDefinition) graphQLSchemaElement).getType();
+        List<GraphQLArgument> arguments = ((GraphQLFieldDefinition) graphQLSchemaElement).getArguments();
+        if (CommonUtils.isListType(returnType)) {
+            template = template.replaceAll(INITIAL_RESULT, "@{responseType} result = [];")
+                    .replaceAll(INITIAL_RESULT_ASSIGNMENT, "result = response.data.@{query};");
+        } else if (CommonUtils.isObjectType(returnType)) {
+            template = template.replaceAll(INITIAL_RESULT,
+                            "map<json> result = {" + getQueryArgumentList(arguments, false) + "};")
+                    .replaceAll(INITIAL_RESULT_ASSIGNMENT,
+                            "mergeToResultJson(result, <map<json>>response.data.@{query}.toJson());");
+        } else {
+            template = template.replaceAll(INITIAL_RESULT, "@{responseType} result = null;")
+                    .replaceAll(INITIAL_RESULT_ASSIGNMENT, "");
+        }
+
         return template.replaceAll(QUERY_PLACEHOLDER,
                         ((GraphQLFieldDefinition) graphQLSchemaElement).getName())
                 .replaceAll(FUNCTION_PARAM_PLACEHOLDER,
@@ -172,6 +191,8 @@ public class GatewayServiceGenerator {
                 .replaceAll(CLIENT_NAME_PLACEHOLDER,
                         getClientNameFromFieldDefinition((GraphQLFieldDefinition) graphQLSchemaElement, type))
                 .replaceAll(QUERY_ARGS_PLACEHOLDER, getQueryArguments(graphQLSchemaElement));
+
+
     }
 
     private ModuleMemberDeclarationNode getGetClientFunction()
@@ -257,19 +278,24 @@ public class GatewayServiceGenerator {
         if (arguments.size() > 0) {
             argumentString.append(", ");
             argumentString.append("{");
-            argumentString.append(getQueryArgumentList(arguments));
+            argumentString.append(getQueryArgumentList(arguments, true));
             argumentString.append("}");
         }
         return argumentString.toString();
     }
 
-    private String getQueryArgumentList(List<GraphQLArgument> arguments) {
+    private String getQueryArgumentList(List<GraphQLArgument> arguments, boolean convertToString) {
         StringBuilder argumentList = new StringBuilder();
         int size = arguments.size();
         int count = 0;
         for (GraphQLArgument argument : arguments) {
-            argumentList.append("\"").append(argument.getName()).append("\": getParamAsString(")
-                    .append(argument.getName()).append(")");
+            if (convertToString) {
+                argumentList.append("\"").append(argument.getName()).append("\": getParamAsString(")
+                        .append(argument.getName()).append(")");
+            } else {
+                argumentList.append("\"").append(argument.getName()).append("\": ")
+                        .append(argument.getName());
+            }
 
             if (size < ++count) {
                 argumentList.append(", ");
@@ -277,4 +303,5 @@ public class GatewayServiceGenerator {
         }
         return argumentList.toString();
     }
+
 }

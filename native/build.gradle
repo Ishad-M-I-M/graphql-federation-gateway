@@ -156,11 +156,8 @@ task checkBallerinaVersion(type: Exec) {
         String output = standardOutput.toString().trim()
         println "Ballerina distribution check result: $output"
         standardOutput = System.out
-        if (executionResult.get().exitValue != 0 || !output.contains(ballerinaLangVersion)) {
-            checkBallerinaVersion.ext.shouldDownload = true
-        } else {
-            checkBallerinaVersion.ext.shouldDownload = false
-        }
+        checkBallerinaVersion.ext.shouldDownload =
+                executionResult.get().exitValue != 0 || !output.contains(ballerinaLangVersion)
     }
 }
 

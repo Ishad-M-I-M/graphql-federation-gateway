@@ -202,6 +202,36 @@ public class CommonUtils {
     }
 
     /**
+     * Return whether the GraphQL type is a list type.
+     *
+     * @param queryType GraphQL type
+     * @return Whether the GraphQL type is a list type
+     */
+    public static Boolean isListType(GraphQLType queryType) {
+        if (queryType instanceof GraphQLList) {
+            return true;
+        } else if (queryType instanceof GraphQLNonNull) {
+            return isListType(((GraphQLNonNull) queryType).getOriginalWrappedType());
+        }
+        return false;
+    }
+
+    /**
+     * Return whether the GraphQL type is an object type.
+     *
+     * @param queryType GraphQL type
+     * @return Whether the GraphQL type is an object type
+     */
+    public static Boolean isObjectType(GraphQLType queryType) {
+        if (queryType instanceof GraphQLObjectType) {
+            return true;
+        } else if (queryType instanceof GraphQLNonNull) {
+            return isObjectType(((GraphQLNonNull) queryType).getOriginalWrappedType());
+        }
+        return false;
+    }
+
+    /**
      * Return map of join graphs in the GraphQL schema as Enum value as the key and a JoinGraph object as the value.
      *
      * @param graphQLSchema GraphQL schema
