@@ -1,3 +1,5 @@
+import ballerina/graphql;
+
 public type Astronaut record {|
     Mission?[]? missions?;
     string? name?;
@@ -14,16 +16,20 @@ public type Mission record {|
 
 public type astronautResponse record {
     record {|Astronaut astronaut;|} data;
+    graphql:ErrorDetail[] errors?;
 };
 
 public type astronautsResponse record {
     record {|Astronaut[] astronauts;|} data;
+    graphql:ErrorDetail[] errors?;
 };
 
 public type missionResponse record {
     record {|Mission mission;|} data;
+    graphql:ErrorDetail[] errors?;
 };
 
 public type missionsResponse record {
     record {|Mission[] missions;|} data;
+    graphql:ErrorDetail[] errors?;
 };
