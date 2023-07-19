@@ -23,6 +23,7 @@ import graphql.language.StringValue;
 import graphql.schema.GraphQLAppliedDirective;
 import graphql.schema.GraphQLAppliedDirectiveArgument;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.InputValueWithState;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
@@ -49,7 +50,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static io.ballerina.compiler.syntax.tree.AbstractNodeFactory.createEmptyMinutiaeList;
 import static io.ballerina.compiler.syntax.tree.AbstractNodeFactory.createEmptyNodeList;
@@ -331,20 +331,26 @@ public class GatewayQueryPlanGenerator {
 
     private String getKeyOfJoinTypeArgument(String name, GraphQLAppliedDirective directive)
             throws GatewayGenerationException {
-        try {
-            for (GraphQLAppliedDirectiveArgument argument : directive.getArguments()) {
-                if (argument.getName().equals(ARGUMENT_KEY)) {
-                    return ((StringValue) Objects.requireNonNull(argument.getArgumentValue().getValue())).getValue();
-                }
-            }
-        } catch (NullPointerException e) {
-            for (FieldData field :
-                    schemaTypes.getFieldsOfType(name)) {
-                if (field.isID()) {
-                    return field.getFieldName();
+        for (GraphQLAppliedDirectiveArgument argument : directive.getArguments()) {
+            if (argument != null && ARGUMENT_KEY.equals(argument.getName())) {
+                InputValueWithState argumentValue = argument.getArgumentValue();
+                if (argumentValue.getValue() instanceof StringValue) {
+                    StringValue stringValue = ((StringValue) argumentValue.getValue());
+                    if (stringValue == null) {
+                        throw new GatewayGenerationException("key argument value is null");
+                    }
+                    return stringValue.getValue();
                 }
             }
         }
+
+        List<FieldData> fields = schemaTypes.getFieldsOfType(name);
+        for (FieldData field : fields) {
+            if (field.isID()) {
+                return field.getFieldName();
+            }
+        }
+
         throw new GatewayGenerationException("No key argument found in @join__type directive");
     }
 
