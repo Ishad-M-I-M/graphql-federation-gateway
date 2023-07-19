@@ -112,7 +112,7 @@ public class GatewayQueryPlanGenerator {
     private final SchemaTypes schemaTypes;
 
     public GatewayQueryPlanGenerator(GraphQLSchema graphQLSchema) throws GatewayGenerationException,
-                                                                         ValidationException {
+            ValidationException {
         this.graphQLSchema = graphQLSchema;
         this.joinGraphs = getJoinGraphs(graphQLSchema);
         this.schemaTypes = new SchemaTypes(graphQLSchema);
